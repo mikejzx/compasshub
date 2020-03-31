@@ -151,6 +151,12 @@ void application::client_set(net_client* const c)
 	client = c;
 }
 
+// Get the client.
+net_client* const application::client_get(void) const
+{
+	return client;
+}
+
 // Add to the current date
 // https://stackoverflow.com/questions/2344330/algorithm-to-add-or-subtract-days-from-a-date
 void application::cur_date_add(int days)

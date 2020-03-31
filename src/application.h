@@ -32,6 +32,9 @@ public:
 	// Set the client to c
 	void client_set(net_client* const c);
 
+	// Get the client.
+	net_client* const client_get(void) const;
+
 	// Retrieve timetable for the day. Doesn't read from cache.
 	bool get_tt_for_day_update(tt_day& outp, const datetime_dmy& d);
 

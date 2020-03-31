@@ -110,6 +110,10 @@ private:
 
 	// Navigation
 	void refresh_from_cache(void);
+	void refresh_from_server(void);
+
+	// Misc
+	bool get_credentials(char*, char*);
 };
 
 #endif

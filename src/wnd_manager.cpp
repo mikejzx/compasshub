@@ -9,6 +9,7 @@
 #include "application.h"
 #include "datetime.h"
 #include "datetime_dmy.h"
+#include "net_client.h"
 #include "tt_day.h"
 #include "tt_period.h"
 #include "vec2.h"
@@ -154,19 +155,7 @@ bool wnd_manager::update(void)
 		case ('r'):
 		case ('R'):
 		{
-			// Set loading string.
-			get_wnd_main()->chg_str(get_wmain_str_load(), COH_SZ_LOADING);
-
-			// Tell the app to get the data.
-			// Then we view it here.
-			tt_day o;
-			app->get_tt_for_day_update(o, app->get_cur_date());
-
-			// Hide the loading string.
-			get_wnd_main()->chg_str(get_wmain_str_load(), "");
-
-			// View the timetable.
-			view_date(o);
+			refresh_from_server();
 		} break;
 
 		// 'h' to navigate left.
@@ -249,12 +238,10 @@ void wnd_manager::show_setup_prompt(void)
 	window swnd = window({ COH_WND_STRETCH, COH_WND_STRETCH }, { 0, 0 });
 	swnd.add_str("Not set up yet. Please create the compasshub.prefs file.", { 0, 0 }, ANCH_CTR);
 	swnd.add_str("Press any key to exit...", { 1, 0 }, ANCH_CTR);
-
-	redraw();
-	swnd.redraw();
+	swnd.invalidate();
 
 	// Wait for a keypress.
-	wgetch(get_wnd_main()->get_wndptr());
+	wgetch(swnd.get_wndptr());
 }
 
 // Called whenever the login status changed.
@@ -330,4 +317,155 @@ void wnd_manager::refresh_from_cache(void)
 		// Set the text to refresh.
 		get_wnd(COH_WND_IDX_FOOTER)->chg_str(get_wfoot_str_retrv(), COH_SZ_RETR_PROMPT);
 	}
+}
+
+// Refresh from the data on server.
+void wnd_manager::refresh_from_server(void)
+{
+	// Set loading string.
+	get_wnd_main()->chg_str(get_wmain_str_load(), COH_SZ_LOADING);
+
+	// Tell the app to get the data.
+	// Then we view it here.
+	auto l_get_tt = [&]()
+	{
+		tt_day o;
+		if (app->get_tt_for_day_update(o, app->get_cur_date()))
+		{
+			// Hide the loading string.
+			get_wnd_main()->chg_str(get_wmain_str_load(), "");
+
+			// View the timetable.
+			view_date(o);
+
+			// Done.
+			return true;
+		}
+		return false;
+	};
+
+	// If we get it, just return.
+	if (l_get_tt()) { return; }
+
+	// Hide loading string.
+	get_wnd_main()->chg_str(get_wmain_str_load(), "");
+
+	// Ask for user's credentials.
+	char cred_user[11];
+	char cred_pass[65];
+	if (!get_credentials(cred_user, cred_pass))
+	{
+		return;
+	}
+
+	// Try login with what we got.
+	app->client_get()->login(cred_user, cred_pass);
+
+	// Try get again.
+	l_get_tt();
+}
+
+// Ask for user's credentials.
+bool wnd_manager::get_credentials(char* user, char* pass)
+{
+	// Create a window to enter data.
+	window cwnd = window({ 1, COH_WND_STRETCH }, { 0, 0 }, anchor::BOTTOM);
+	cwnd.invalidate();
+
+	// The raw pointer to the window.
+	WINDOW* cwptr = cwnd.get_wndptr();
+
+	// Enable cursor and echoing.
+	curs_set(COH_WND_CURSOR_VISIBLE);
+
+	// Used for getting string input.
+	auto l_get_str = [&](char* buf, bool is_pass, size_t maxlen, size_t startpos)
+	{
+		size_t pos = 0;
+		while (true)
+		{
+			bool bksp = false;
+			chtype ch;
+			switch(ch = wgetch(cwptr))
+			{
+				// Handle return key.
+				case (KEY_ENTER):
+				case (0x0A):
+				case (0x0D):
+				{
+					return;
+				}
+
+				// Handle backspaces.
+				case (KEY_BACKSPACE):
+				case (0x7F):
+				case ('\b'):
+				{
+					if (pos > 0)
+					{
+						// Clear the old char.
+						mvwaddch(cwptr, 0, startpos + pos- 2, ' ' | A_INVIS);
+						buf[pos] = '\0';
+
+						// Move cursor.
+						--pos;
+						wmove(cwptr, 0, startpos + pos - 1);
+						wrefresh(cwptr);
+					}
+					else
+					{
+						buf[0] = '\0';
+					}
+					bksp = true;
+				}
+			}
+
+			// Check to make sure we aren't out of bounds.
+			if (pos < maxlen && !bksp)
+			{
+				// Echo the char.
+				wechochar(cwptr, is_pass ? '*' : ch);
+
+				// Change buffer.
+				buf[pos] = (char)ch;
+				buf[pos + 1] = '\0';
+
+				// Move cursor.
+				++pos;
+			}
+		}
+	};
+
+	// Write the username string, and get user input.
+	wmove(cwptr, 0, 0);
+	wrefresh(cwptr);
+	waddstr(cwptr, "Username: ");
+	l_get_str(user, false, 9, sizeof("Username: "));
+
+	// If length is zero, just abort.
+	if (strlen(user) == 0)
+	{
+		goto cred_end;
+	}
+
+	// Write password, string, then get user input.
+	wmove(cwptr, 0, 0);
+	wclear(cwptr);
+	wrefresh(cwptr);
+	waddstr(cwptr, "Password: ");
+	l_get_str(pass, true, 63, sizeof("Password: "));
+
+	// If length is zero, just abort.
+	if (strlen(pass) == 0)
+	{
+		goto cred_end;
+	}
+
+cred_end:
+	// Clear the window.
+	wclear(cwptr);
+	wrefresh(cwptr);
+
+	curs_set(COH_WND_CURSOR_HIDDEN);
+	return true;
 }
