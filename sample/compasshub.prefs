@@ -1,0 +1,5 @@
+example-domain.compass.education
+/login.aspx?sessionstate=disabled
+/Services/UserAuthentication.svc/IsRecaptchaRequired
+/Services/Calendar.svc/GetCalendarEventsByUser?sessionstate=readonly
+/Portal/Logout.aspx

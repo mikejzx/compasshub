@@ -1,0 +1,2 @@
+These logging methods were taken from another of my ncurses projects written in C.
+This is very basic, and is prone to fail. Be cautious of what variadic arguments are passed.

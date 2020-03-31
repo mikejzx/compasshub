@@ -1,0 +1,45 @@
+compasshub
+==========
+
+A second attempt at writing a TUI-based Compass portal client.
+Written for my own use, so I don't have to log into Compass every
+damn day. Honestly doubt any other human on the planet would need
+to use this.
+
+Note: Currently there is no login system. Login is only done
+using cookies at the moment. A login system will hopefully be
+added soon.
+
+-- -- -- Checklist -- -- --
+[x] Ability to retrieve timetable data.
+[x] Ability to display timetable data.
+[x] Filesystem-caching.
+[x] Separate "events" from "periods".
+[ ] Login system.
+
+-- -- -- Dependencies -- -- --
+- ncurses
+- OpenSSL v1.1 (libssl-dev)
+- libcrypto
+
+-- -- -- Preferences -- -- --
+CompassHub requires a preferences file, compasshub.prefs, which needs
+to be filled with URLs required to connect to the portal site. The main
+domain hostname needs to be adjusted to suit the school, but the rest
+should work universally assuming Compass uses the same links across
+schools. Below is an example compasshub.prefs file.
+
+example-domain.compass.education
+/login.aspx?sessionstate=disabled
+/Services/UserAuthentication.svc/IsRecaptchaRequired
+/Services/Calendar.svc/GetCalendarEventsByUser?sessionstate=readonly
+/Portal/Logout.aspx
+
+-- -- -- Building -- -- --
+The project is Makefile-based. Literally just run `make` and everything
+should compile (after a bit of time...)
+
+-- -- -- Running -- -- --
+At the moment, the project searches in the working directory for
+preferences files, cache, etc. It is advised to run the program from
+the directory is was built from.

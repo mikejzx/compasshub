@@ -1,0 +1,5 @@
+bin/*
+test_resources/*
+src/rapidjson/*
+!src/rapidjson/license.txt
+!src/rapidjson/README.txt
