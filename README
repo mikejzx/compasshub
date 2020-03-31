@@ -19,6 +19,8 @@ added soon.
 
 -- -- -- Dependencies -- -- --
 - ncurses
+- RapidJSON (https://github.com/Tencent/rapidjson/)
+    Simply clone the repo above's 'include' folder into src/rapidjson/ here.
 - OpenSSL v1.1 (libssl-dev)
 - libcrypto
 
