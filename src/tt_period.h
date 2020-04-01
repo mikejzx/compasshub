@@ -9,6 +9,8 @@
 
 #include "time_of_day.h"
 
+struct prefs;
+
 enum period_state : char
 {
 	NONE        = 0, // Unknown period state.
@@ -31,11 +33,15 @@ struct tt_period
 	time_of_day end;
 	period_state state;
 
+	// Used for constructing pretty titles.
+	bool title_parsed;
+	std::string t_subj;
+	std::string t_room;
+	std::string t_tchr;
+
 	// Constructor.
-	tt_period(const std::string& ttl, const time_of_day& be,
-			const time_of_day& en, const period_state s)
-		: title(ttl), begin(be), end(en), state(s)
-	{}
+	tt_period(const std::string&, const time_of_day&,
+			const time_of_day&, const period_state, const prefs&);
 };
 
 #endif

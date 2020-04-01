@@ -30,7 +30,7 @@ public:
 	bool login(const std::string&, const std::string&);
 
 	// Get timetable information.
-	bool retrieve_data(std::vector<tt_period>&, std::vector<tt_period>&, const datetime_dmy&);
+	bool retrieve_data(std::vector<tt_period>&, std::vector<tt_period>&, const datetime_dmy&, const prefs&);
 
 	// Log out of site.
 	void logoff(void);

@@ -102,6 +102,9 @@ void window_main::set_date(const datetime_dmy& d)
 	// We need a redraw. This will not actually draw the schedule yet, just the
 	// title.
 	window::invalidate();
+
+	// Redraw events too.
+	wnd_manager::get().get_wnd(COH_WND_IDX_EVENTS)->invalidate();
 }
 
 // Set the date info, allowing a redraw of the timetable.
@@ -181,14 +184,53 @@ void window_main::redraw_periods(void)
 		// Draw the label.
 		unsigned str_y = COH_WND_MAIN_PERIODS_OFFSY + p_beg_row + 1 + y_force;
 		unsigned str_x = COH_WND_MAIN_PERIODS_OFFSX + 1;
+
+		// Create the title string.
 		std::string title_str = "";
 		title_str.reserve(32);
 		if (p.state == period_state::CANCELLED)
 		{
-			title_str += "(Cancelled) ";
+			title_str += "(Cancel) ";
 		}
-		title_str += p.title;
-		mvwaddstr(wnd, str_y, str_x, title_str.c_str());
+
+		// If we have parsed the period, we can split the information
+		// onto multiple lines/sections.
+		if (p.title_parsed)
+		{
+			// Always have subject on first line.
+			title_str += p.t_subj;
+
+			// Adjust based on row count.
+			if (h == 3)
+			{
+				// Single row:
+				title_str += ": " + p.t_room + ", " + p.t_tchr;
+				mvwaddstr(wnd, str_y, str_x, title_str.c_str());
+			}
+			else if (h == 4)
+			{
+				// Two rows.
+				title_str += " in " + p.t_room;
+				mvwaddstr(wnd, str_y, str_x, title_str.c_str());
+				std::string row_2 = " + Teacher: " + p.t_tchr;
+				mvwaddstr(wnd, str_y + 1, str_x, row_2.c_str());
+			}
+			else if (h > 4)
+			{
+				// Three rows.
+				mvwaddstr(wnd, str_y, str_x, title_str.c_str());
+				std::string row_2 = " + In " + p.t_room;
+				mvwaddstr(wnd, str_y + 1, str_x, row_2.c_str());
+				std::string row_3 = " + Teacher: " + p.t_tchr;
+				mvwaddstr(wnd, str_y + 2, str_x, row_3.c_str());
+			}
+		}
+		else
+		{
+			// Not parsed. Just use the title Compass gives us.
+			title_str += p.title;
+			mvwaddstr(wnd, str_y, str_x, title_str.c_str());
+		}
 
 		// End time label. Anchored to right of the tile.
 		char end_time_str[16] = "Finish ";

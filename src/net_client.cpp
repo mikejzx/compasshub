@@ -258,7 +258,8 @@ bool net_client::login(
 bool net_client::retrieve_data(
 	std::vector<tt_period>& timetable,
 	std::vector<tt_period>& events,
-	const datetime_dmy& dt
+	const datetime_dmy& dt,
+	const prefs& pref
 )
 {
 	// Create SSLClient if we need.
@@ -307,7 +308,7 @@ bool net_client::retrieve_data(
 	S_CHK_RESP("POST");
 
 	// Parse the JSON.
-	if (!tt_parser::parse_json(timetable, events, resp->body))
+	if (!tt_parser::parse_json(timetable, events, resp->body, pref))
 	{
 		LOG_ERROR("Unable to retrieve timetable due to JSON errors.");
 		timetable.clear();

@@ -38,22 +38,133 @@ application::~application()
 // Look for the preferences file.
 bool application::prefs_check()
 {
-	// Check if it exists.
+	// Check if preferences file exists.
 	std::ifstream f(COH_PREFS_FILE_PATH);
 	if (!f.good())
 	{
 		// Doesn't exist. We prompt user.
 		return false;
 	}
-	LOG_INFO("Preferences file exists. Trying to use it.");
+	LOG_INFO("Preferences file exists. Trying to read it.");
 
-	if (!std::getline(f, preferences.hostname)   ||
-		!std::getline(f, preferences.path_login) ||
-		!std::getline(f, preferences.path_auth)  ||
-		!std::getline(f, preferences.path_tt)    ||
-		!std::getline(f, preferences.path_logoff))
+	// Constants for parsing mode.
+	// MODE_NORM -> Normal parsing of preferences.
+	// MODE_ALIASES -> For parsing title alises.
+	static const int
+		MODE_NORM = 0,
+		MODE_ALIASES = 1;
+
+	// Iterate over all the lines of the file and parse accordingly.
+	size_t cur_line = 1;
+	int    mode = MODE_NORM;
+	for (std::string line; std::getline(f, line); ++cur_line)
 	{
-		LOG_ERROR("Failed to read prefs file.");
+		if (line.length() > 255)
+		{
+			// Prevent allocating ridiculous amounts of memory.
+			continue;
+		}
+
+		// Strip comments.
+		size_t comm_pos = line.find("#");
+		if (comm_pos != std::string::npos)
+		{
+			// Just skip if the whole line is a comment.
+			if (comm_pos == 0)
+			{
+				continue;
+			}
+			// Cut off comment part.
+			line = line.substr(0, comm_pos);
+		}
+
+		// Skip empty lines.
+		if (line.length() <= 1)
+		{
+			continue;
+		}
+
+		// Check for mode-change flags.
+		if (line.compare(COH_PREF_MODE_ALIASES_BEGIN) == 0)
+		{
+			mode = MODE_ALIASES;
+			continue;
+		}
+
+		// If we are in alias mode
+		if (mode == MODE_ALIASES)
+		{
+			// Check for ender.
+			if (line.compare(COH_PREF_MODE_ALIASES_END) == 0)
+			{
+				mode = MODE_NORM;
+				continue;
+			}
+		}
+
+		// Find quotation marks for assignment preferences.
+		size_t q_0 = line.find("\"");
+		size_t q_1 = line.find("\"", q_0 + 1);
+		size_t eq  = line.find("=",  q_1 + 1);
+		size_t q_2 = line.find("\"", eq + 1);
+		size_t q_3 = line.find("\"", q_2 + 1);
+
+		// Make sure we have all quotation marks and equalities.
+		if (
+			q_0 == std::string::npos
+			|| q_1 == std::string::npos
+			|| eq  == std::string::npos
+			|| q_2 == std::string::npos
+			|| q_3 == std::string::npos
+		)
+		{
+			LOG_WARN("Prefs, line %d: Syntax error", cur_line);
+			continue;
+		}
+
+		// Get the left and right assignments.
+		std::string lhs = line.substr(q_0 + 1, q_1 - q_0 - 1);
+		std::string rhs = line.substr(q_2 + 1, q_3 - q_2 - 1);
+
+		// Handle normal preferences.
+		if (mode == MODE_NORM)
+		{
+			// Macro to prevent writing this an extreme number of times.
+		#define S_COMPARE(prefname, membname)\
+			if (lhs.compare(prefname) == 0)\
+			{ preferences.membname = rhs; continue; }
+
+			// Assign to the corresponding string in prefs file.
+			S_COMPARE(COH_PREF_NAME_HOSTNAME, hostname);
+			S_COMPARE(COH_PREF_NAME_PLOGIN,   path_login);
+			S_COMPARE(COH_PREF_NAME_PAUTH,    path_auth);
+			S_COMPARE(COH_PREF_NAME_PTT,      path_tt);
+			S_COMPARE(COH_PREF_NAME_PLOGOFF,  path_logoff);
+
+			LOG_WARN("Prefs, line %d: Unrecognised preference: '%s'", cur_line, lhs.c_str());
+
+			continue;
+
+			// Undefine macro
+		#undef S_COMPARE
+		}
+		if (mode == MODE_ALIASES)
+		{
+			// Add alias to aliases map.
+			preferences.aliases[lhs] = rhs;
+			continue;
+		}
+	}
+
+	// Make sure we got all the stuff we need.
+	if (
+		preferences.hostname.empty()
+		|| preferences.path_login.empty()
+		|| preferences.path_auth.empty()
+		|| preferences.path_tt.empty()
+		|| preferences.path_logoff.empty()
+	)
+	{
 		return false;
 	}
 
@@ -114,17 +225,17 @@ bool application::get_tt_for_day_update(tt_day& outp, const datetime_dmy& d)
 #ifdef COH_USE_SAMPLE_DATA
 	// Use example data instead of actually retrieving it.
 	ret.periods.clear();
-	ret.periods.push_back(tt_period("Sample period 2", { 10,   0 }, { 12,  0 }, period_state::NORMAL));
-	ret.periods.push_back(tt_period("Sample period 3", { 12,   0 }, { 13, 30 }, period_state::CHANGED));
-	ret.periods.push_back(tt_period("Sample period 1", { 9,    0 }, { 10,  0 }, period_state::NORMAL));
-	ret.periods.push_back(tt_period("Sample period 4", { 14,  20 }, { 15, 10 }, period_state::NORMAL));
-	ret.periods.push_back(tt_period("Sample period 5", { 15,  10 }, { 15, 25 }, period_state::NORMAL));
-	ret.periods.push_back(tt_period("Sample period 6", { 15,  20 }, { 15, 50 }, period_state::NORMAL));
-	ret.events .push_back(tt_period("Sample event with an extremely long amount of text to test if the text will actually wrap around the way I'd like it to?",    {  7,  20 }, { 15, 50 }, period_state::EVENT));
-	ret.events .push_back(tt_period("Sample event with an extremely long amount of text to test if the text will actually wrap around the way I'd like it to?",    {  6,  20 }, { 12, 50 }, period_state::EVENT));
+	ret.periods.push_back(tt_period("Sample period 2", { 10,   0 }, { 12,  0 }, period_state::NORMAL, preferences));
+	ret.periods.push_back(tt_period("Sample period 3", { 12,   0 }, { 13, 30 }, period_state::CHANGED, preferences));
+	ret.periods.push_back(tt_period("Sample period 1", { 9,    0 }, { 10,  0 }, period_state::NORMAL, preferences));
+	ret.periods.push_back(tt_period("Sample period 4", { 14,  20 }, { 15, 10 }, period_state::NORMAL, preferences));
+	ret.periods.push_back(tt_period("Sample period 5", { 15,  10 }, { 15, 25 }, period_state::NORMAL, preferences));
+	ret.periods.push_back(tt_period("Sample period 6", { 15,  20 }, { 15, 50 }, period_state::NORMAL, preferences));
+	ret.events .push_back(tt_period("Sample event with an extremely long amount of text to test if the text will actually wrap around the way I'd like it to?",    {  7,  20 }, { 15, 50 }, period_state::EVENT, preferences));
+	ret.events .push_back(tt_period("Sample event with an extremely long amount of text to test if the text will actually wrap around the way I'd like it to?",    {  6,  20 }, { 12, 50 }, period_state::EVENT, preferences));
 #else
 	// Retrieve from the site.
-	if (!client->retrieve_data(ret.periods, ret.events, d))
+	if (!client->retrieve_data(ret.periods, ret.events, d, preferences))
 	{
 		LOG_ERROR("Was unable to retrieve data.");
 		return false;
@@ -374,7 +485,8 @@ bool application::cache_read(tt_day& outp, int id) const
 				p_title,
 				time_of_day(pb_hr, pb_min),
 				time_of_day(pe_hr, pe_min),
-				(period_state)p_state
+				(period_state)p_state,
+				preferences
 			);
 		}
 		return true;

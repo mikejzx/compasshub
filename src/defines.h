@@ -44,6 +44,7 @@
 #define COH_WND_IDX_MAIN   1
 #define COH_WND_IDX_FOOTER 2
 #define COH_WND_IDX_HEADER 3
+#define COH_WND_IDX_STATUS 4
 
 // Window manager, main window stuff.
 #define COH_WND_MAIN_TITLE_OFFSY 2    // Y Offset of the date title.
@@ -69,9 +70,18 @@
 #define COH_COL_PERIOD_FG_STRIDE 4 // Use this to convert between blackfg and whitefg colours.
 #define COH_WND_STRETCH -1         // Set this to stretch along axis.
 
-// Application defines.
+// Path defines.
 #define COH_COOKIE_JAR_PATH "./" COH_PROGRAM_NAME_LOWER ".cookiejar"
 #define COH_PREFS_FILE_PATH "./" COH_PROGRAM_NAME_LOWER ".prefs"
+
+// Preferences.
+#define COH_PREF_NAME_HOSTNAME "hostname"
+#define COH_PREF_NAME_PLOGIN "login"
+#define COH_PREF_NAME_PAUTH "auth"
+#define COH_PREF_NAME_PTT "tt"
+#define COH_PREF_NAME_PLOGOFF "logoff"
+#define COH_PREF_MODE_ALIASES_BEGIN "aliases_begin"
+#define COH_PREF_MODE_ALIASES_END "aliases_end"
 
 // Logger (log.h, log.c)
 #define LOG_LEVEL LOG_LEVEL_VERBOSE

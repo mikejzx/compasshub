@@ -77,9 +77,10 @@ public:
 
 	// Get indices of window components.
 	inline int get_wfoot_str_status(void) const { return wfoot_str_status; }
-	inline int get_wfoot_str_retrv (void) const { return wfoot_str_retrv; }
-	inline int get_wmain_str_load  (void) const { return wmain_str_load; }
+	inline int get_wfoot_str_retrv (void) const { return wfoot_str_retrv;  }
+	inline int get_wmain_str_load  (void) const { return wmain_str_load;   }
 	inline int get_wevnt_str_status(void) const { return wevnt_str_status; }
+	inline int get_wstat_str_status(void) const { return wstat_str_status; }
 
 	// Our callbacks
 	static void cb_login_status_changed(int);
@@ -94,6 +95,7 @@ private:
 	int wfoot_str_retrv;  // Retreival
 	int wmain_str_load;   // Loading string.
 	int wevnt_str_status; // Events status.
+	int wstat_str_status; // Status line status.
 
 	// The application pointer which we can refer to.
 	application* app;

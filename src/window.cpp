@@ -58,10 +58,10 @@ void window::chg_str(int idx, const std::string& to, int att)
 	components[idx].content = to;
 
 	// Set attributes if it's not -1.
-	if (att != -1)
-	{
+	//if (att != -1)
+	//{
 		components[idx].attrib = att;
-	}
+	//}
 
 	// Ask for a redraw.
 	invalidate();

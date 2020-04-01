@@ -51,12 +51,17 @@ wnd_manager::wnd_manager()
 	wfoot_str_status = wfoot->add_str(COH_SZ_STATUS_LOGGEDOFF, { 0, 2 }, ANCH_BR);
 	wfoot_str_retrv  = wfoot->add_str(COH_SZ_RETR_PROMPT, { 0, 2 }, ANCH_BL, A_BOLD);
 
+	// Status line. Most of this is handled manually.
+	window* wstat    = new window({ 1, COH_WND_STRETCH }, { 0, 0 }, anchor::BOTTOM);
+	wstat_str_status = wstat->add_str("", { 0, 0 }, anchor::LEFT);
+
 	// Add to the windows vector.
-	wnds.resize(4);
+	wnds.resize(5);
 	wnds[COH_WND_IDX_FOOTER] = wfoot;
 	wnds[COH_WND_IDX_MAIN]   = wmain;
 	wnds[COH_WND_IDX_HEADER] = whead;
 	wnds[COH_WND_IDX_EVENTS] = wevnt;
+	wnds[COH_WND_IDX_STATUS] = wstat;
 
 	// Handle window resizes.
 	struct sigaction sigact_resize = {
@@ -358,22 +363,40 @@ void wnd_manager::refresh_from_server(void)
 		return;
 	}
 
+	// Update string.
+	window* const w = get_wnd(COH_WND_IDX_STATUS);
+	w->chg_str(wstat_str_status, "Logging in...");
+
 	// Try login with what we got.
 	app->client_get()->login(cred_user, cred_pass);
 
-	// Try get again.
-	l_get_tt();
+	// Try get schedule.
+	std::string strlogin_status;
+	int strcolour;
+	if (l_get_tt())
+	{
+		strlogin_status = "Successful login.";
+		strcolour = COH_COL_STATUS_LI;
+	}
+	else
+	{
+		strlogin_status = "Failed to log in.";
+		strcolour = COH_COL_STATUS_LO;
+	}
+	w->chg_str(wstat_str_status, strlogin_status, COLOR_PAIR(strcolour));
+
+	// Wait for input to hide string.
+	wgetch(w->get_wndptr());
+	w->chg_str(wstat_str_status, "");
 }
 
 // Ask for user's credentials.
 bool wnd_manager::get_credentials(char* user, char* pass)
 {
-	// Create a window to enter data.
-	window cwnd = window({ 1, COH_WND_STRETCH }, { 0, 0 }, anchor::BOTTOM);
+	// Get window where data is entered.
+	static window& cwnd = *get_wnd(COH_WND_IDX_STATUS);
+	static WINDOW* cwptr = cwnd.get_wndptr();
 	cwnd.invalidate();
-
-	// The raw pointer to the window.
-	WINDOW* cwptr = cwnd.get_wndptr();
 
 	// Enable cursor and echoing.
 	curs_set(COH_WND_CURSOR_VISIBLE);
@@ -381,6 +404,7 @@ bool wnd_manager::get_credentials(char* user, char* pass)
 	// Used for getting string input.
 	auto l_get_str = [&](char* buf, bool is_pass, size_t maxlen, size_t startpos)
 	{
+		// Position of cursor.
 		size_t pos = 0;
 		while (true)
 		{
@@ -401,10 +425,11 @@ bool wnd_manager::get_credentials(char* user, char* pass)
 				case (0x7F):
 				case ('\b'):
 				{
+					// Only backspace if we are after first char.
 					if (pos > 0)
 					{
 						// Clear the old char.
-						mvwaddch(cwptr, 0, startpos + pos- 2, ' ' | A_INVIS);
+						mvwaddch(cwptr, 0, startpos + pos - 2, ' ' | A_INVIS);
 						buf[pos] = '\0';
 
 						// Move cursor.

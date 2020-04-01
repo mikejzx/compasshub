@@ -8,6 +8,7 @@
  */
 
 struct tt_period;
+struct prefs;
 
 namespace tt_parser
 {
@@ -15,13 +16,18 @@ namespace tt_parser
 	 * Used for UTC conversion. Not mean't to be used
 	 * outside this file.
 	 */
-	std::time_t get_epoch_time(const std::string& t, int* status);
+	std::time_t get_epoch_time(const std::string&, int*);
 
 	/*
 	 * Convert JSON data to a tt_period vector.
 	 * (Clears outp buffer before beginning.)
 	 */
-	bool parse_json(std::vector<tt_period>& outp, std::vector<tt_period>& outp_events, const std::string& inp);
+	bool parse_json(std::vector<tt_period>&, std::vector<tt_period>&, const std::string&, const prefs&);
+
+	/*
+	 * Parse information from period title.
+	 */
+	bool parse_tt_period_title(const std::string&, const prefs&, std::string&, std::string&, std::string&);
 }
 
 #endif

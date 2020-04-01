@@ -1,5 +1,6 @@
 
 #include "pch.h"
+#include "prefs.h"
 #include "tt_parser.h"
 #include "tt_period.h"
 
@@ -25,7 +26,8 @@ std::time_t tt_parser::get_epoch_time(const std::string& t, int* status)
 bool tt_parser::parse_json(
 	std::vector<tt_period>& outp,
 	std::vector<tt_period>& outp_events,
-	const std::string& inp
+	const std::string& inp,
+	const prefs& pref
 )
 {
 	outp.clear();
@@ -113,7 +115,7 @@ bool tt_parser::parse_json(
 	#define S_RESULT\
 		j_title,\
 		time_of_day((unsigned)local_start .tm_hour, (unsigned)local_start .tm_min),\
-		time_of_day((unsigned)local_finish.tm_hour, (unsigned)local_finish.tm_min), s
+		time_of_day((unsigned)local_finish.tm_hour, (unsigned)local_finish.tm_min), s, pref
 
 		// Push into the right vector.
 		if (s != period_state::EVENT)
@@ -130,5 +132,48 @@ bool tt_parser::parse_json(
 	}
 
 	// Parse success.
+	return true;
+}
+
+// Parse the period title for information.
+// Returns true if there was success getting all information.
+bool tt_parser::parse_tt_period_title(const std::string& title, const prefs& pref,
+	std::string& out_subj, std::string& out_room, std::string& out_tchr
+)
+{
+	// Our title for periods is in the format of:
+	// '<Unused> - <Subject Name> - <Room name> - <Teacher>'
+	char p_subj[64];
+	char p_room[64];
+	char p_tchr[64];
+
+	// Check if the string is enormous.
+	if (title.length() >= sizeof(" - ") * 3 + 64 * 3)
+	{
+		return false;
+	}
+
+	// Get the data.
+	if (sscanf(title.c_str(), "%*s - %s - %s - %s", p_subj, p_room, p_tchr) != 3)
+	{
+		return false;
+	}
+
+	// Returns an alias if we have it, and just the input if not.
+	auto l_check_alias = [&](const std::string& s)
+	{
+		// If we have string in the aliases map, return it.
+		if (pref.aliases.find(s) != pref.aliases.end())
+		{
+			return pref.aliases.at(s);
+		}
+		return s;
+	};
+
+	// Check if our data is aliased.
+	out_subj = l_check_alias(p_subj);
+	out_room = l_check_alias(p_room);
+	out_tchr = l_check_alias(p_tchr);
+
 	return true;
 }
