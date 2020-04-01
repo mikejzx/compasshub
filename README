@@ -14,13 +14,14 @@ added soon.
 [x] Ability to retrieve timetable data.
 [x] Ability to display timetable data.
 [x] Filesystem-caching.
-[x] Separate "events" from "periods".
-[ ] Login system.
+[x] Separate “events” from “periods”.
+[x] Login system.
+[x] ‘Aliases’ system.
 
 -- -- -- Dependencies -- -- --
 - ncurses
 - RapidJSON (https://github.com/Tencent/rapidjson/)
-    Simply clone the repo above's 'include' folder into src/rapidjson/ here.
+    Simply clone the repo above's ‘include’ folder into src/rapidjson/ here.
 - OpenSSL v1.1 (libssl-dev)
 - libcrypto
 
