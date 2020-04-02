@@ -6,10 +6,6 @@ Written for my own use, so I don't have to log into Compass every
 damn day. Honestly doubt any other human on the planet would need
 to use this.
 
-Note: Currently there is no login system. Login is only done
-using cookies at the moment. A login system will hopefully be
-added soon.
-
 -- -- -- Checklist -- -- --
 [x] Ability to retrieve timetable data.
 [x] Ability to display timetable data.
@@ -30,13 +26,7 @@ CompassHub requires a preferences file, compasshub.prefs, which needs
 to be filled with URLs required to connect to the portal site. The main
 domain hostname needs to be adjusted to suit the school, but the rest
 should work universally assuming Compass uses the same links across
-schools. Below is an example compasshub.prefs file.
-
-example-domain.compass.education
-/login.aspx?sessionstate=disabled
-/Services/UserAuthentication.svc/IsRecaptchaRequired
-/Services/Calendar.svc/GetCalendarEventsByUser?sessionstate=readonly
-/Portal/Logout.aspx
+schools. A sample preferences file is provided.
 
 -- -- -- Building -- -- --
 The project is Makefile-based. Literally just run `make` and everything

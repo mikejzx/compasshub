@@ -1,5 +1,25 @@
-example-domain.compass.education
-/login.aspx?sessionstate=disabled
-/Services/UserAuthentication.svc/IsRecaptchaRequired
-/Services/Calendar.svc/GetCalendarEventsByUser?sessionstate=readonly
-/Portal/Logout.aspx
+
+# Site URLS required to sign in. Only 'hostname' should differ between schools, assuming
+# Compass Portal uses the same resources for all schools.
+"hostname"= "example-domain-vic.compass.education"
+"login"   = "/login.aspx?sessionstate=disabled"
+"auth"    = "/Services/UserAuthentication.svc/IsRecaptchaRequired"
+"tt"      = "/Services/Calendar.svc/GetCalendarEventsByUser?sessionstate=readonly"
+"logoff"  = "/Portal/Logout.aspx"
+
+# Aliases. These are useful if Compass delivers subject or teacher names
+# in an ugly format.
+aliases_begin
+
+# Subject names
+"ENG" = "English"
+"ICT" = "I.T."
+"PHY" = "Physics"
+"NUM" = "Numeracy"
+
+# Teachers
+"JSM" = "Mr Smith"
+"BBO" = "Mr Bobbyson"
+"AAB" = "Ms Abc"
+
+aliases_end
