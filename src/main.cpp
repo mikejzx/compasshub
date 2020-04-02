@@ -39,8 +39,7 @@ int main (int argc, char* argv[])
 
 	// Create main application state.
 	application* app = new application(wnd_manager::cb_date_set);
-	//app->set_cur_date(get_dmy_today());
-	app->set_cur_date(datetime_dmy(27, 3, 2020, 5));
+	app->set_cur_date(get_dmy_today());
 	winman.set_app(app);
 	if (!app->prefs_check())
 	{
