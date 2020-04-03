@@ -200,29 +200,103 @@ void window_main::redraw_periods(void)
 			// Always have subject on first line.
 			title_str += p.t_subj;
 
+			// Look for room/teacher changes.
+			// The strings will have a forward slash if they are "modified".
+			size_t cdelim_room = p.t_room.find("/");
+			size_t cdelim_tchr = p.t_tchr.find("/");
+			bool chg_room = cdelim_room != std::string::npos;
+			bool chg_tchr = cdelim_tchr != std::string::npos;
+			std::string str_orig_room, str_new_room = p.t_room;
+			std::string str_orig_tchr, str_new_tchr = p.t_tchr;
+			if (chg_room)
+			{
+				str_orig_room = p.t_room.substr(0, cdelim_room);
+				str_new_room  = p.t_room.substr(cdelim_room + 1, p.t_room.length() - cdelim_room);
+				LOG_DBUG("ROOM CHANGE: '%s' -> '%s'", str_orig_room.c_str(), str_new_room.c_str());
+			}
+			if (chg_tchr)
+			{
+				str_orig_tchr = p.t_tchr.substr(0, cdelim_tchr);
+				str_new_tchr  = p.t_tchr.substr(cdelim_tchr + 1, p.t_tchr.length() - cdelim_tchr);
+				LOG_DBUG("ROOM CHANGE: '%s' -> '%s'", str_orig_tchr.c_str(), str_new_tchr.c_str());
+			}
+
+			// Make sure cursor is moved to correct pos before calling this.
+			auto l_draw_orig_and_new = [&](const std::string& s_o, const std::string& s_n)
+			{
+				// Just draw new in standout, and old in dim.
+				wattron (wnd, A_STANDOUT);
+				waddstr (wnd, s_n.c_str());
+				wattroff(wnd, A_STANDOUT);
+				waddch  (wnd, ' ');
+				wattron (wnd, A_DIM);
+				waddstr (wnd, ("(was " + s_o + ")").c_str());
+				wattroff(wnd, A_DIM);
+			};
+
 			// Adjust based on row count.
 			if (h == 3)
 			{
 				// Single row:
-				title_str += ": " + p.t_room + ", " + p.t_tchr;
+				title_str += ": " + str_new_room + ", " + str_new_tchr;
 				mvwaddstr(wnd, str_y, str_x, title_str.c_str());
 			}
 			else if (h == 4)
 			{
 				// Two rows.
-				title_str += " in " + p.t_room;
-				mvwaddstr(wnd, str_y, str_x, title_str.c_str());
-				std::string row_2 = " + Teacher: " + p.t_tchr;
-				mvwaddstr(wnd, str_y + 1, str_x, row_2.c_str());
+
+				// Draw the room.
+				if (!chg_room)
+				{
+					// Not changed.  Just draw normally.
+					title_str += " in " + str_new_room;
+					mvwaddstr(wnd, str_y, str_x, title_str.c_str());
+				}
+				else
+				{
+					// Draw the main title and room.
+					title_str += " in ";
+					mvwaddstr(wnd, str_y, str_x, title_str.c_str());
+					l_draw_orig_and_new(str_orig_room, str_new_room);
+				}
+
+				// Draw teacher.
+				mvwaddstr(wnd, str_y + 1, str_x, " + Teacher: ");
+				if (!chg_tchr)
+				{
+					waddstr(wnd, str_new_tchr.c_str());
+				}
+				else
+				{
+					l_draw_orig_and_new(str_orig_tchr, str_new_tchr);
+				}
 			}
 			else if (h > 4)
 			{
 				// Three rows.
 				mvwaddstr(wnd, str_y, str_x, title_str.c_str());
-				std::string row_2 = " + In " + p.t_room;
-				mvwaddstr(wnd, str_y + 1, str_x, row_2.c_str());
-				std::string row_3 = " + Teacher: " + p.t_tchr;
-				mvwaddstr(wnd, str_y + 2, str_x, row_3.c_str());
+
+				// Draw room:
+				mvwaddstr(wnd, str_y + 1, str_x, " + In ");
+				if (!chg_room)
+				{
+					waddstr(wnd, str_new_room.c_str());
+				}
+				else
+				{
+					l_draw_orig_and_new(str_orig_room, str_new_room);
+				}
+
+				// Draw teacher.
+				mvwaddstr(wnd, str_y + 2, str_x, " + Teacher: ");
+				if (!chg_tchr)
+				{
+					waddstr(wnd, str_new_tchr.c_str());
+				}
+				else
+				{
+					l_draw_orig_and_new(str_orig_tchr, str_new_tchr);
+				}
 			}
 		}
 		else

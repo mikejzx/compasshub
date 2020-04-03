@@ -153,11 +153,21 @@ bool tt_parser::parse_tt_period_title(const std::string& title, const prefs& pre
 		return false;
 	}
 
-	// Get the data.
-	if (sscanf(title.c_str(), "%*s - %s - %s - %s", p_subj, p_room, p_tchr) != 3)
+	// Get the data. We strip the whitespace later.
+	if (sscanf(title.c_str(),
+		"%*s - %[^\t\n-]- %[^\t\n-]- %[^\t\n-]",
+		p_subj, p_room, p_tchr) != 3)
 	{
 		return false;
 	}
+
+	// Strip whitespace. It'll only appear at the end of the strings.
+	size_t siz = strlen(p_subj) - 1;
+	if (p_subj[siz] == ' ') { p_subj[siz] = '\0'; }
+	siz = strlen(p_room) - 1;
+	if (p_room[siz] == ' ') { p_room[siz] = '\0'; }
+	siz = strlen(p_tchr) - 1;
+	if (p_tchr[siz] == ' ') { p_tchr[siz] = '\0'; }
 
 	// Returns an alias if we have it, and just the input if not.
 	auto l_check_alias = [&](const std::string& s)
@@ -171,9 +181,47 @@ bool tt_parser::parse_tt_period_title(const std::string& title, const prefs& pre
 	};
 
 	// Check if our data is aliased.
+	// We also parse strikeouts.
 	out_subj = l_check_alias(p_subj);
-	out_room = l_check_alias(p_room);
-	out_tchr = l_check_alias(p_tchr);
+	std::string str_orig, str_new;
+	if (parse_tt_period_title_strikeouts(p_room, str_orig, str_new))
+	{
+		// Split string to format "orig/new".
+		out_room = l_check_alias(str_orig) + "/" + l_check_alias(str_new);
+	}
+	else
+	{
+		out_room = l_check_alias(p_room);
+	}
+	if (parse_tt_period_title_strikeouts(p_tchr, str_orig, str_new))
+	{
+		// Split string to format "orig/new".
+		out_tchr = l_check_alias(str_orig) + "/" + l_check_alias(str_new);
+	}
+	else
+	{
+		out_tchr = l_check_alias(p_tchr);
+	}
+
+	return true;
+}
+
+// Parse the title for "modifications".
+bool tt_parser::parse_tt_period_title_strikeouts(
+	const std::string& input, std::string& s_orig, std::string& s_new
+)
+{
+	// Just do a sscanf for the two strings.
+	char s_orig_c[64];
+	char s_new_c [64];
+	if (sscanf(input.c_str(), "<strike>%63[^\t\n><]</strike>&nbsp; %63s", s_orig_c, s_new_c) != 2)
+	{
+		return false;
+	}
+
+	// Output.
+	s_orig = s_orig_c;
+	s_new  = s_new_c;
 
 	return true;
 }

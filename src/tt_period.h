@@ -18,11 +18,6 @@ enum period_state : char
 	CHANGED     = 2, // Irregular period.
 	CANCELLED   = 3, // Cancelled period.
 	EVENT       = 4, // Not an actual period. Is an event.
-
-	// TODO: Implement these by parsing
-	// title for <strike> tags.
-	//ROOMCHANGE = 2, // Period has had a room change.
-	//SUBSTITUTE = 4  // Substitute teacher.
 };
 
 struct tt_period

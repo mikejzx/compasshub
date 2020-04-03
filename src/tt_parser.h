@@ -3,8 +3,8 @@
 
 /*
  * tt_parser.h
- * Contains methods to parse JSON timetable into
- * timetable objects.
+ * Contains methods for general parsing in the application.
+ * Includes JSON parsing, and period title seperation.
  */
 
 struct tt_period;
@@ -28,6 +28,12 @@ namespace tt_parser
 	 * Parse information from period title.
 	 */
 	bool parse_tt_period_title(const std::string&, const prefs&, std::string&, std::string&, std::string&);
+
+	/*
+	 * Parse a period title for "modifications". (i.e: room changes.)
+	 * These "modifications" are determined merely by HTML <strike> tags.
+	 */
+	bool parse_tt_period_title_strikeouts(const std::string&, std::string&, std::string&);
 }
 
 #endif
