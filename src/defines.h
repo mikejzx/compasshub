@@ -10,7 +10,7 @@
 #define COH_PROGRAM_NAME        "CompassHub"
 #define COH_PROGRAM_NAME_LOWER  "compasshub"
 #define COH_PROGRAM_NAME_UPPER  "COMPASSHUB"
-#define COH_PROGRAM_VERSION     "v0.0.2 SNAPSHOT 20w14a"
+#define COH_PROGRAM_VERSION     "v0.0.3"
 #define COH_PROGRAM_CREDIT      "Created by Michael Skec"
 
 // Enable this to use sample data.

@@ -21,18 +21,21 @@
 #include "tt_day.h"
 
 static datetime_dmy get_dmy_today(void);
+static bool parse_cmd_line(int, char**);
 
 /*
  * Program entry point.
  */
 int main (int argc, char* argv[])
 {
-	// Currently unused command-line arguments.
-	(void)argc;
-	(void)argv;
 
 	// Initialise objects.
 	log_initialise();
+	// Parse command line arguments.
+	if (!parse_cmd_line(argc, argv))
+	{
+		return 0;
+	}
 
 	// Initialise window manager.
 	wnd_manager& winman = wnd_manager::get();
@@ -85,4 +88,25 @@ static datetime_dmy get_dmy_today(void)
 		now.tm_year + 1900,
 		now.tm_wday
 	);
+}
+
+// Parse command line arguments.
+// Returns false if program execution should end.
+static bool parse_cmd_line(int argc, char* argv[])
+{
+	(void)argc;
+
+	// Iterate until no arguments left.
+	while (*++argv)
+	{
+		// We only look for a version string for now.
+		if (strcmp(*argv, "--version") == 0 ||
+			strcmp(*argv, "-v") == 0)
+		{
+			printf(COH_PROGRAM_NAME " - " COH_PROGRAM_VERSION "\n");
+			return false;
+		}
+	}
+
+	return true;
 }
