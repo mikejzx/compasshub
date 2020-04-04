@@ -75,6 +75,12 @@ public:
 		return (window_main*)wnds[COH_WND_IDX_MAIN];
 	}
 
+    // Is the window big enough to draw in?
+    inline static bool can_draw(void)
+    {
+        return COLS > COH_WND_MIN_WIDTH && LINES > COH_WND_MIN_HEIGHT;
+    }
+
 	// Get indices of window components.
 	inline int get_wfoot_str_status(void) const { return wfoot_str_status; }
 	inline int get_wfoot_str_retrv (void) const { return wfoot_str_retrv;  }

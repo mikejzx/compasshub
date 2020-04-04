@@ -76,7 +76,7 @@ wnd_manager::wnd_manager()
 			wrefresh(stdscr);
 
 			// Redraw everything if we aren't too small.
-			if (COLS > COH_WND_MIN_WIDTH && LINES > COH_WND_MIN_HEIGHT)
+			if (wnd_manager::can_draw())
 			{
 				wnd_manager::get().on_resize();
 			}
@@ -104,14 +104,20 @@ void wnd_manager::redraw_initial(void)
 	// Refresh all our stuff from cache.
 	refresh_from_cache();
 
+	// Make sure we have reasonable size.
+    if (wnd_manager::can_draw())
+    {
+        return;
+    }
+
 	// Mark everything as dirty.
 	for (unsigned i = 0; i < wnds.size(); ++i)
 	{
 		wnds[i]->invalidate();
 	}
 
-	// Redraw everything.
-	redraw();
+    // Redraw.
+    redraw();
 }
 
 // Inform all windows that there was a resize.

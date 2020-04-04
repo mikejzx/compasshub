@@ -269,7 +269,7 @@ vec2 window::calc_real_pos(void) const
 		// - Y becomes termheight - winheight - Y offset
 		if (S_ANCH_IS(anch, BOTTOM))
 		{
-			ret.y = LINES - size_real.y - pos.y;
+			ret.y = LINES - size_real.y - pos.y - padding.bottom;
 		}
 	}
 
@@ -288,12 +288,16 @@ vec2 window::calc_real_pos(void) const
 		// Right
 		if (S_ANCH_IS(anch, RIGHT))
 		{
-			ret.x = COLS - size_real.x - pos.x;
+			ret.x = COLS - size_real.x - pos.x - padding.right;
 		}
 	}
 
 	// Add padding.
 	ret.x += x_add;
+
+    // Clamp values.
+    ret.x = std::max(0, ret.x);
+    ret.y = std::max(0, ret.y);
 
 	return ret;
 }

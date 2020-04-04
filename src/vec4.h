@@ -26,6 +26,7 @@
  *         - Subtract left padding from width.
  *     + If RIGHT anchor:
  *         - Subtract right padding from width.
+ *         - Pos becomes total width - wnd width.
  *
  * + If stretched along X:
  *     - Not yet needed, so we don't handle.

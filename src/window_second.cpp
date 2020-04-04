@@ -20,8 +20,18 @@
 
 // Construct window.
 window_second::window_second(const vec2& s, const vec2& p, anchor a, const vec4& pad)
-	: window(s, p, a, pad), size_orig(s)
-{}
+	: window(s, p, a, pad)
+{
+    // Same as on_resize, but don't invalidate just yet.
+	size_real = calc_real_size();
+	size_real.w = get_main_area_width();
+	wresize(wnd, size_real.h, size_real.w);
+	vec2 p_real = calc_real_pos();
+    if (wnd_manager::can_draw())
+    {
+        mvwin(wnd, p_real.y, p_real.x);
+    }
+}
 
 // Destructor.
 window_second::~window_second()
@@ -40,6 +50,7 @@ void window_second::redraw(void)
 	// Call the base method.
 	static int w, h;
 	redraw_begin(&w, &h);
+	w = get_main_area_width();
 
 	// Get our vector.
 	wnd_manager& wm = wnd_manager::get();
@@ -79,12 +90,14 @@ void window_second::redraw(void)
 void window_second::on_resize(void)
 {
 	// Resize the actual window.
-	vec2 size_real = calc_real_size();
-	size.w = get_main_area_width();
-	wresize(wnd, size_real.h, size.w);
+	size_real = calc_real_size();
+	size_real.w = get_main_area_width();
+	wresize(wnd, size_real.h, size_real.w);
 
-	// Call super class method.
-	window::on_resize();
+    // Redraw. Can't use the super class method as it works a bit differently.
+	vec2 p_real = calc_real_pos();
+	mvwin(wnd, p_real.y, p_real.x);
+	invalidate();
 }
 
 
@@ -140,9 +153,9 @@ tt_day* const window_second::get_date_info(void) const
 // Get the width of this window.
 unsigned window_second::get_main_area_width(void) const
 {
-	if (COLS > size_orig.w * 2)
+	if (COLS > size.w * 2)
 	{
-		return (unsigned)size_orig.w;
+		return (unsigned)size.w;
 	}
 	return (unsigned)COLS / 2 - 3;
 }

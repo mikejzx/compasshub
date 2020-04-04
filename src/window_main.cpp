@@ -26,7 +26,7 @@ window_main::window_main(const vec2& s, const vec2& p, anchor a, const vec4& pad
 	strcpy(date_str, "...");
 
 	// Run a quick resize.
-	vec2 size_real = calc_real_size();
+	size_real = calc_real_size();
 	unsigned w = get_main_area_width();
 	wresize(wnd, size_real.h, w);
 }
@@ -79,7 +79,7 @@ void window_main::redraw(void)
 void window_main::on_resize(void)
 {
 	// Resize the actual window.
-	vec2 size_real = calc_real_size();
+	size_real = calc_real_size();
 	unsigned w = get_main_area_width();
 	wresize(wnd, size_real.h, w);
 
@@ -124,8 +124,6 @@ void window_main::redraw_periods(void)
 {
 	// Return if nothing to draw.
 	if (!date_info) { return; }
-
-	//LOG_DBUG("\033[00;92m-- -- -- BEGIN TILE DRAW -- -- --\033[00;39m");
 
 	// Variables we might use pretty often.
 	static unsigned i;
@@ -212,13 +210,11 @@ void window_main::redraw_periods(void)
 			{
 				str_orig_room = p.t_room.substr(0, cdelim_room);
 				str_new_room  = p.t_room.substr(cdelim_room + 1, p.t_room.length() - cdelim_room);
-				LOG_DBUG("ROOM CHANGE: '%s' -> '%s'", str_orig_room.c_str(), str_new_room.c_str());
 			}
 			if (chg_tchr)
 			{
 				str_orig_tchr = p.t_tchr.substr(0, cdelim_tchr);
 				str_new_tchr  = p.t_tchr.substr(cdelim_tchr + 1, p.t_tchr.length() - cdelim_tchr);
-				LOG_DBUG("ROOM CHANGE: '%s' -> '%s'", str_orig_tchr.c_str(), str_new_tchr.c_str());
 			}
 
 			// Make sure cursor is moved to correct pos before calling this.
@@ -321,9 +317,7 @@ void window_main::redraw_periods(void)
 		char beg_time_str[6];
 		p.begin.str(beg_time_str);
 		mvwaddstr(wnd, str_y, str_x - 7, beg_time_str);
-	}
-
-	//LOG_DBUG("\033[00;92m-- -- -- END TILE DRAW -- -- --\033[00;39m");
+    }
 }
 
 // Draw a fancy box. Width is same as window.
