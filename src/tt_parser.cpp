@@ -74,7 +74,8 @@ bool tt_parser::parse_json(
 		// - #dce6f4 Normal
 		// - #f4dcdc Room change/substitute
 		// - #EFEFEF Cancelled
-		// - #2951B9 Events (Don't show these in timetable, maybe on side?)
+		// - #2951B9 Events (Shown on side)
+		// - #FFBB5B Tasks (Shown at top on side.)
 		period_state s = period_state::NORMAL;
 		if (strcmp(j_bgcol, "#dce6f4") == 0)
 		{
@@ -88,6 +89,11 @@ bool tt_parser::parse_json(
 		{
 			// Events are considered periods too.
 			s = period_state::EVENT;
+		}
+		else if (strcmp(j_bgcol, "#FFBB5B") == 0)
+		{
+			// Tasks are also events.
+			s = (period_state)(period_state::TASK | period_state::EVENT);
 		}
 		else
 		{
@@ -104,9 +110,11 @@ bool tt_parser::parse_json(
 		std::tm local_start    = *localtime(&utc_start );
 		std::tm local_finish   = *localtime(&utc_finish);
 
+		bool event = (s & period_state::EVENT) == period_state::EVENT;
+
 		// Check if the start/end time is in school hours. If not, skip this.
-		if ((s != period_state::EVENT)
-			&& (local_start.tm_hour < 7 || local_start.tm_hour >= 18))
+		if (!event &&
+			(local_start.tm_hour < 7 || local_start.tm_hour >= 18))
 		{
 			continue;
 		}
@@ -118,7 +126,7 @@ bool tt_parser::parse_json(
 		time_of_day((unsigned)local_finish.tm_hour, (unsigned)local_finish.tm_min), s, pref
 
 		// Push into the right vector.
-		if (s != period_state::EVENT)
+		if (!event)
 		{
 			outp.emplace_back(S_RESULT);
 		}

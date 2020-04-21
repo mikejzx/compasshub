@@ -16,8 +16,9 @@ enum period_state : char
 	NONE        = 0, // Unknown period state.
 	NORMAL      = 1, // Regular period.
 	CHANGED     = 2, // Irregular period.
-	CANCELLED   = 3, // Cancelled period.
-	EVENT       = 4, // Not an actual period. Is an event.
+	CANCELLED   = 4, // Cancelled period.
+	EVENT       = 8, // Not an actual period. Is an event.
+	TASK        = 16 // Tasks. Remember to assign these as also EVENTs.
 };
 
 struct tt_period
